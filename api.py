@@ -1,15 +1,22 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from groq import Groq
 
 app = FastAPI(title="Chronos XAI Engine")
 
-api_key = os.getenv("GROQ_API_KEY")
-if not api_key:
-    raise ValueError("GROQ_API_KEY environment variable not set")
+# Attach CORS middleware for dashboard and local web client integration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-groq_client = Groq(api_key=api_key)
+api_key = os.getenv("GROQ_API_KEY", "demo_mode_key")
+groq_client = Groq(api_key=api_key) if api_key else None
 
 class ThreatData(BaseModel):
     vitality: float

@@ -3,6 +3,7 @@
   PROJECT CHRONOS — AI INFERENCE ENGINE (SCALABLE FLEET BUILD)
 ===================================================================
 """
+import os
 import time
 import sys
 import argparse
@@ -12,6 +13,12 @@ import torch
 import torch.nn as nn
 from collections import deque
 from datetime import datetime
+
+# Ensure UTF-8 stdout/stderr for Windows terminal output
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 
 try:
     import redis
@@ -27,13 +34,13 @@ except ImportError:
     INFLUX_AVAILABLE = False
 
 # --- CONFIGURATION ---
-REDIS_HOST           = "localhost"
-REDIS_PORT           = 6379
+REDIS_HOST           = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT           = int(os.getenv("REDIS_PORT", 6379))
 
-INFLUX_URL           = "http://localhost:8181"
-INFLUX_TOKEN         = "my-super-secret-auth-token"
-INFLUX_ORG           = "vitality"
-INFLUX_BUCKET        = "chronos_telemetry"
+INFLUX_URL           = os.getenv("INFLUX_URL", "http://localhost:8181")
+INFLUX_TOKEN         = os.getenv("INFLUX_TOKEN", "my-super-secret-auth-token")
+INFLUX_ORG           = os.getenv("INFLUX_ORG", "vitality")
+INFLUX_BUCKET        = os.getenv("INFLUX_DATABASE", "chronos_telemetry")
 
 # --- AI HYPERPARAMETERS ---
 WINDOW_SIZE          = 64
@@ -135,10 +142,10 @@ class InfluxWriter:
             try:
                 self.client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
                 self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
-                print("  ✅ InfluxDB connected at http://localhost:8181")
-            except:
+                print(f"  ✅ InfluxDB connected at {INFLUX_URL}")
+            except Exception as e:
                 self.available = False
-                print("  ⚠️ InfluxDB unavailable")
+                print(f"  ⚠️ InfluxDB unavailable ({e})")
 
     def write_vitality(self, vitality, loss, limit, is_anomaly,
                        dev_id, xai_message, incident_response):
@@ -189,7 +196,7 @@ def main(target_device, redis_stream):
         normalize_window(np.sort(baseline_iats[i:i + WINDOW_SIZE]))
         for i in range(0, len(baseline_iats) - WINDOW_SIZE, WINDOW_STRIDE)
     ]
-    X = torch.tensor(np.array(windows), dtype=torch.float32).unsqueeze(1).to(DEVICE)
+    X = torch.tensor(np.array(windows), dtype=torch.float32).reshape(-1, 1, WINDOW_SIZE).to(DEVICE)
 
     for epoch in range(TRAINING_EPOCHS):
         optimizer.zero_grad()
@@ -235,7 +242,9 @@ def main(target_device, redis_stream):
                 if len(iat_buffer) == WINDOW_SIZE and packets_seen % WINDOW_STRIDE == 0:
                     window    = np.sort(np.array(iat_buffer))
                     normed    = normalize_window(window)
-                    tensor_in = torch.tensor(normed, dtype=torch.float32).unsqueeze(0).unsqueeze(0).to(DEVICE)
+                    # Explicit 3D tensor alignment [1, 1, 64] with dimension validation
+                    tensor_in = torch.tensor(normed, dtype=torch.float32).reshape(1, 1, WINDOW_SIZE).to(DEVICE)
+                    assert tensor_in.shape == (1, 1, WINDOW_SIZE), f"Tensor shape mismatch: expected (1, 1, {WINDOW_SIZE}), got {tensor_in.shape}"
 
                     with torch.no_grad():
                         loss = criterion(model(tensor_in), tensor_in).item()

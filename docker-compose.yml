@@ -3,11 +3,15 @@ version: '3.8'
 services:
   redis:
     image: redis:latest
+    container_name: chronos_redis
+    restart: always
     ports:
       - "6379:6379"
 
   influxdb:
     image: influxdb:2.7
+    container_name: chronos_influxdb
+    restart: always
     ports:
       - "8181:8086"
     environment:
@@ -21,6 +25,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: chronos_grafana
+    restart: always
     ports:
       - "3000:3000"
     depends_on:
