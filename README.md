@@ -37,6 +37,18 @@
 
 ---
 
+
+## Acknowledgments & Context
+
+This project was conceived and built during the **National 24-Hour Hackathon** hosted at **JSS Academy of Technical Education (JSSATE)** in collaboration with **IIT Guwahati**.
+
+* **Project:** CHRONOS
+* **Role:** Contributor & Co-developer
+* **Original Repository:** https://github.com/Dhiveej/CHRONOS
+* **Team Members:** DHIVEEJ ATISH N, BHUVAN S K, DHANUSH V, DEEKSHITH S
+
+> *Note: This repository serves as a personal fork/archive showcasing my contributions to the architecture, pipeline, and codebase during the event.*
+
 ## 🧬 The Core Concept
 
 Current firewalls are like security guards reading everyone's mail *(Deep Packet Inspection)*. They violate privacy, consume excessive processing power for tiny IoT devices, and completely fail against zero-day exploits.
