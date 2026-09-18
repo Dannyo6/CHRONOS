@@ -47,7 +47,7 @@ This project was conceived and built during the **National 24-Hour Hackathon** h
 * **Original Repository:** https://github.com/Dhiveej/CHRONOS
 * **Team Members:** DHIVEEJ ATISH N, BHUVAN S K, DHANUSH V, DEEKSHITH S
 
-> *Note: This repository serves as a personal fork/archive showcasing my contributions to the architecture, pipeline, and codebase during the event.*
+> *Note: This repository serves as a personal archive showcasing my contributions to the architecture, pipeline, and codebase during the event.*
 
 ## 🧬 The Core Concept
 
