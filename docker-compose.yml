@@ -7,6 +7,8 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
 
   influxdb:
     image: influxdb:2.7
@@ -21,6 +23,8 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=vitality
       - DOCKER_INFLUXDB_INIT_BUCKET=chronos_telemetry
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+    volumes:
+      - influxdb2_data:/var/lib/influxdb2
 
   grafana:
     image: grafana/grafana:latest
@@ -30,3 +34,10 @@ services:
       - "3000:3000"
     depends_on:
       - influxdb
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  influxdb2_data:
+  grafana_data:
+  redis_data:
